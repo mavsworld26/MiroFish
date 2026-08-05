@@ -76,94 +76,123 @@
         </div>
       </div>
 
-      <!-- RIGHT PANEL: Interaction Interface -->
-      <div class="right-panel" ref="rightPanel">
-        <!-- Unified Action Bar - Professional Design -->
-        <div class="action-bar">
-        <div class="action-bar-header">
-          <svg class="action-bar-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <div class="action-bar-text">
-            <span class="action-bar-title">{{ $t('step5.interactiveTools') }}</span>
-            <span class="action-bar-subtitle mono">{{ $t('step5.agentsAvailable', { count: profiles.length }) }}</span>
+      <!-- RIGHT PANEL: WhatsApp-style Interaction Interface -->
+      <div class="right-panel wa-shell" ref="rightPanel">
+        <!-- Sidebar: chat list -->
+        <aside class="wa-sidebar">
+          <div class="wa-sidebar-header">
+            <div class="wa-brand-avatar">M</div>
+            <span class="wa-sidebar-title">{{ $t('step5.interactiveTools') }}</span>
+            <span class="wa-sidebar-count mono">{{ profiles.length }}</span>
           </div>
-        </div>
-          <div class="action-bar-tabs">
-            <button 
-              class="tab-pill"
+
+          <div class="wa-search-bar">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input v-model="sidebarSearch" type="text" :placeholder="$t('step5.searchPlaceholder')" class="wa-search-input">
+          </div>
+
+          <div class="wa-chat-list">
+            <!-- Report Agent (pinned) -->
+            <div
+              class="wa-chat-item"
               :class="{ active: activeTab === 'chat' && chatTarget === 'report_agent' }"
               @click="selectReportAgentChat"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-              </svg>
-              <span>{{ $t('step5.chatWithReportAgent') }}</span>
-            </button>
-            <div class="agent-dropdown" v-if="profiles.length > 0">
-              <button 
-                class="tab-pill agent-pill"
-                :class="{ active: activeTab === 'chat' && chatTarget === 'agent' }"
-                @click="toggleAgentDropdown"
-              >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>{{ selectedAgent ? selectedAgent.username : $t('step5.chatWithAgent') }}</span>
-                <svg class="dropdown-arrow" :class="{ open: showAgentDropdown }" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-              <div v-if="showAgentDropdown" class="dropdown-menu">
-                <div class="dropdown-header">{{ $t('step5.selectChatTarget') }}</div>
-                <div 
-                  v-for="(agent, idx) in profiles" 
-                  :key="idx"
-                  class="dropdown-item"
-                  @click="selectAgent(agent, idx)"
-                >
-                  <div class="agent-avatar">{{ (agent.username || 'A')[0] }}</div>
-                  <div class="agent-info">
-                    <span class="agent-name">{{ agent.username }}</span>
-                    <span class="agent-role">{{ agent.profession || $t('step2.unknownProfession') }}</span>
-                  </div>
+              <div class="wa-chat-avatar wa-avatar-report">R</div>
+              <div class="wa-chat-info">
+                <div class="wa-chat-row">
+                  <span class="wa-chat-name">{{ $t('step5.reportAgentChat') }}</span>
+                  <span class="wa-chat-time mono">{{ lastTimeFor('report_agent') }}</span>
+                </div>
+                <div class="wa-chat-row">
+                  <span class="wa-chat-preview">{{ lastMessageFor('report_agent') || $t('step5.reportAgentDesc') }}</span>
                 </div>
               </div>
             </div>
-            <div class="tab-divider"></div>
-            <button
-              class="tab-pill survey-pill"
+
+            <!-- Broadcast / Survey (pinned) -->
+            <div
+              class="wa-chat-item wa-broadcast-item"
               :class="{ active: activeTab === 'survey' }"
               @click="selectSurveyTab"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 11l3 3L22 4"></path>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
-              <span>{{ $t('step5.sendSurvey') }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Chat Mode -->
-        <div v-if="activeTab === 'chat'" class="chat-container">
-
-          <!-- Report Agent Tools Card -->
-          <div v-if="chatTarget === 'report_agent'" class="report-agent-tools-card">
-            <div class="tools-card-header">
-              <div class="tools-card-avatar">R</div>
-              <div class="tools-card-info">
-                <div class="tools-card-name">{{ $t('step5.reportAgentChat') }}</div>
-                <div class="tools-card-subtitle">{{ $t('step5.reportAgentDesc') }}</div>
+              <div class="wa-chat-avatar wa-avatar-broadcast">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
               </div>
-              <button class="tools-card-toggle" @click="showToolsDetail = !showToolsDetail">
-                <svg :class="{ 'is-expanded': showToolsDetail }" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"></polyline>
+              <div class="wa-chat-info">
+                <div class="wa-chat-row">
+                  <span class="wa-chat-name">{{ $t('step5.sendSurvey') }}</span>
+                  <span v-if="surveyResults.length" class="wa-chat-time mono">{{ surveyResults.length }}</span>
+                </div>
+                <div class="wa-chat-row">
+                  <span class="wa-chat-preview">{{ $t('step5.selectSurveyTarget') }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="wa-list-divider"></div>
+
+            <!-- Simulated agents -->
+            <div
+              v-for="{ agent, idx } in filteredProfiles"
+              :key="idx"
+              class="wa-chat-item"
+              :class="{ active: activeTab === 'chat' && chatTarget === 'agent' && selectedAgentIndex === idx }"
+              @click="selectAgent(agent, idx)"
+            >
+              <div class="wa-chat-avatar" :style="{ background: avatarColor(idx) }">{{ (agent.username || 'A')[0] }}</div>
+              <div class="wa-chat-info">
+                <div class="wa-chat-row">
+                  <span class="wa-chat-name">{{ agent.username }}</span>
+                  <span class="wa-chat-time mono">{{ lastTimeFor(`agent_${idx}`) }}</span>
+                </div>
+                <div class="wa-chat-row">
+                  <span class="wa-chat-preview">{{ lastMessageFor(`agent_${idx}`) || agent.profession || $t('step2.unknownProfession') }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="profiles.length === 0" class="wa-empty-list">
+              {{ $t('step5.chatEmptyAgent') }}
+            </div>
+            <div v-else-if="filteredProfiles.length === 0" class="wa-empty-list">
+              {{ $t('step5.noSearchResults') }}
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main: chat / survey area -->
+        <div class="wa-main">
+          <!-- Chat Mode -->
+          <div v-if="activeTab === 'chat'" class="wa-chat-area">
+            <div class="wa-chat-header">
+              <div class="wa-header-avatar" :style="chatTarget === 'agent' && selectedAgentIndex !== null ? { background: avatarColor(selectedAgentIndex) } : {}">
+                {{ chatTarget === 'report_agent' ? 'R' : (selectedAgent?.username?.[0] || 'A') }}
+              </div>
+              <div class="wa-header-info">
+                <span class="wa-header-name">{{ chatTarget === 'report_agent' ? $t('step5.reportAgentChat') : (selectedAgent?.username || $t('step5.chatWithAgent')) }}</span>
+                <span class="wa-header-status">
+                  <span v-if="isSending" class="wa-typing">{{ $t('step5.typing') }}</span>
+                  <span v-else>{{ chatTarget === 'report_agent' ? $t('step5.reportAgentDesc') : (selectedAgent?.profession || $t('step5.online')) }}</span>
+                </span>
+              </div>
+              <button class="wa-icon-btn" :title="$t('step5.viewInfo')" @click="showInfoPanel = !showInfoPanel">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" :class="{ 'is-expanded': showInfoPanel }" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
               </button>
             </div>
-            <div v-if="showToolsDetail" class="tools-card-body">
+
+            <!-- Collapsible info panel -->
+            <div v-if="showInfoPanel && chatTarget === 'report_agent'" class="wa-info-panel">
               <div class="tools-grid">
                 <div class="tool-item tool-purple">
                   <div class="tool-icon-wrapper">
@@ -214,193 +243,186 @@
                 </div>
               </div>
             </div>
-          </div>
+            <div v-if="showInfoPanel && chatTarget === 'agent' && selectedAgent" class="wa-info-panel">
+              <div class="profile-card-label">{{ $t('step5.profileBio') }}</div>
+              <p class="wa-profile-bio">{{ selectedAgent.bio || selectedAgent.profession || $t('step2.unknownProfession') }}</p>
+            </div>
 
-          <!-- Agent Profile Card -->
-          <div v-if="chatTarget === 'agent' && selectedAgent" class="agent-profile-card">
-            <div class="profile-card-header">
-              <div class="profile-card-avatar">{{ (selectedAgent.username || 'A')[0] }}</div>
-              <div class="profile-card-info">
-                <div class="profile-card-name">{{ selectedAgent.username }}</div>
-                <div class="profile-card-meta">
-                  <span v-if="selectedAgent.name" class="profile-card-handle">@{{ selectedAgent.name }}</span>
-                  <span class="profile-card-profession">{{ selectedAgent.profession || $t('step2.unknownProfession') }}</span>
+            <!-- Messages -->
+            <div class="wa-messages" ref="chatMessages">
+              <div v-if="chatHistory.length === 0" class="wa-empty-chat">
+                <div class="wa-empty-chat-icon">
+                  <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <p class="empty-text">
+                  {{ chatTarget === 'report_agent' ? $t('step5.chatEmptyReportAgent') : $t('step5.chatEmptyAgent') }}
+                </p>
+              </div>
+
+              <template v-else>
+                <div class="wa-date-divider"><span>{{ $t('step5.today') }}</span></div>
+                <div
+                  v-for="(msg, idx) in chatHistory"
+                  :key="idx"
+                  class="wa-bubble-row"
+                  :class="msg.role === 'user' ? 'sent' : 'received'"
+                >
+                  <div class="wa-bubble">
+                    <div class="wa-bubble-text" v-html="renderMarkdown(msg.content)"></div>
+                    <div class="wa-bubble-meta">
+                      <span class="wa-bubble-time">{{ formatTime(msg.timestamp) }}</span>
+                      <svg v-if="msg.role === 'user'" class="wa-check" viewBox="0 0 16 15" width="16" height="15" fill="none">
+                        <path d="M1 7.5L4.5 11L11 3" stroke="#53BDEB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5.5 7.5L9 11L15.5 3" stroke="#53BDEB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+              <div v-if="isSending" class="wa-bubble-row received">
+                <div class="wa-bubble wa-typing-bubble">
+                  <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
                 </div>
               </div>
-              <button class="profile-card-toggle" @click="showFullProfile = !showFullProfile">
-                <svg :class="{ 'is-expanded': showFullProfile }" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"></polyline>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="wa-input-bar">
+              <textarea
+                v-model="chatInput"
+                class="wa-input"
+                :placeholder="$t('step5.chatInputPlaceholder')"
+                @keydown.enter.exact.prevent="sendMessage"
+                :disabled="isSending || (!selectedAgent && chatTarget === 'agent')"
+                rows="1"
+                ref="chatInputRef"
+              ></textarea>
+              <button
+                class="wa-send-btn"
+                @click="sendMessage"
+                :disabled="!chatInput.trim() || isSending || (!selectedAgent && chatTarget === 'agent')"
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
               </button>
             </div>
-            <div v-if="showFullProfile && selectedAgent.bio" class="profile-card-body">
-              <div class="profile-card-bio">
-                <div class="profile-card-label">{{ $t('step5.profileBio') }}</div>
-                <p>{{ selectedAgent.bio }}</p>
-              </div>
-            </div>
           </div>
 
-          <!-- Chat Messages -->
-          <div class="chat-messages" ref="chatMessages">
-            <div v-if="chatHistory.length === 0" class="chat-empty">
-              <div class="empty-icon">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <!-- Survey Mode -->
+          <div v-if="activeTab === 'survey'" class="wa-chat-area">
+            <div class="wa-chat-header">
+              <div class="wa-header-avatar wa-avatar-broadcast">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                 </svg>
               </div>
-              <p class="empty-text">
-                {{ chatTarget === 'report_agent' ? $t('step5.chatEmptyReportAgent') : $t('step5.chatEmptyAgent') }}
-              </p>
-            </div>
-            <div 
-              v-for="(msg, idx) in chatHistory" 
-              :key="idx"
-              class="chat-message"
-              :class="msg.role"
-            >
-              <div class="message-avatar">
-                <span v-if="msg.role === 'user'">U</span>
-                <span v-else>{{ msg.role === 'assistant' && chatTarget === 'report_agent' ? 'R' : (selectedAgent?.username?.[0] || 'A') }}</span>
-              </div>
-              <div class="message-content">
-                <div class="message-header">
-                  <span class="sender-name">
-                    {{ msg.role === 'user' ? 'You' : (chatTarget === 'report_agent' ? 'Report Agent' : (selectedAgent?.username || 'Agent')) }}
-                  </span>
-                  <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-                </div>
-                <div class="message-text" v-html="renderMarkdown(msg.content)"></div>
+              <div class="wa-header-info">
+                <span class="wa-header-name">{{ $t('step5.sendSurvey') }}</span>
+                <span class="wa-header-status">{{ $t('step5.selectedCount', { selected: selectedAgents.size, total: profiles.length }) }}</span>
               </div>
             </div>
-            <div v-if="isSending" class="chat-message assistant">
-              <div class="message-avatar">
-                <span>{{ chatTarget === 'report_agent' ? 'R' : (selectedAgent?.username?.[0] || 'A') }}</span>
-              </div>
-              <div class="message-content">
-                <div class="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Chat Input -->
-          <div class="chat-input-area">
-            <textarea 
-              v-model="chatInput"
-              class="chat-input"
-              :placeholder="$t('step5.chatInputPlaceholder')"
-              @keydown.enter.exact.prevent="sendMessage"
-              :disabled="isSending || (!selectedAgent && chatTarget === 'agent')"
-              rows="1"
-              ref="chatInputRef"
-            ></textarea>
-            <button 
-              class="send-btn"
-              @click="sendMessage"
-              :disabled="!chatInput.trim() || isSending || (!selectedAgent && chatTarget === 'agent')"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
-          </div>
-        </div>
+            <div class="survey-container">
+              <!-- Survey Setup -->
+              <div class="survey-setup">
+                <div class="setup-section">
+                  <div class="section-header">
+                    <span class="section-title">{{ $t('step5.selectSurveyTarget') }}</span>
+                    <span class="selection-count">{{ $t('step5.selectedCount', { selected: selectedAgents.size, total: profiles.length }) }}</span>
+                  </div>
+                  <div class="agents-grid">
+                    <label
+                      v-for="(agent, idx) in profiles"
+                      :key="idx"
+                      class="agent-checkbox"
+                      :class="{ checked: selectedAgents.has(idx) }"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="selectedAgents.has(idx)"
+                        @change="toggleAgentSelection(idx)"
+                      >
+                      <div class="checkbox-avatar">{{ (agent.username || 'A')[0] }}</div>
+                      <div class="checkbox-info">
+                        <span class="checkbox-name">{{ agent.username }}</span>
+                        <span class="checkbox-role">{{ agent.profession || $t('step2.unknownProfession') }}</span>
+                      </div>
+                      <div class="checkbox-indicator">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                    </label>
+                  </div>
+                  <div class="selection-actions">
+                    <button class="action-link" @click="selectAllAgents">{{ $t('step5.selectAll') }}</button>
+                    <span class="action-divider">|</span>
+                    <button class="action-link" @click="clearAgentSelection">{{ $t('step5.clearSelection') }}</button>
+                  </div>
+                </div>
 
-        <!-- Survey Mode -->
-        <div v-if="activeTab === 'survey'" class="survey-container">
-          <!-- Survey Setup -->
-          <div class="survey-setup">
-            <div class="setup-section">
-              <div class="section-header">
-                <span class="section-title">{{ $t('step5.selectSurveyTarget') }}</span>
-                <span class="selection-count">{{ $t('step5.selectedCount', { selected: selectedAgents.size, total: profiles.length }) }}</span>
-              </div>
-              <div class="agents-grid">
-                <label 
-                  v-for="(agent, idx) in profiles" 
-                  :key="idx"
-                  class="agent-checkbox"
-                  :class="{ checked: selectedAgents.has(idx) }"
+                <div class="setup-section">
+                  <div class="section-header">
+                    <span class="section-title">{{ $t('step5.surveyQuestions') }}</span>
+                  </div>
+                  <textarea
+                    v-model="surveyQuestion"
+                    class="survey-input"
+                    :placeholder="$t('step5.surveyInputPlaceholder')"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <button
+                  class="survey-submit-btn"
+                  :disabled="selectedAgents.size === 0 || !surveyQuestion.trim() || isSurveying"
+                  @click="submitSurvey"
                 >
-                  <input 
-                    type="checkbox" 
-                    :checked="selectedAgents.has(idx)"
-                    @change="toggleAgentSelection(idx)"
+                  <span v-if="isSurveying" class="loading-spinner"></span>
+                  <span v-else>{{ $t('step5.submitSurvey') }}</span>
+                </button>
+              </div>
+
+              <!-- Survey Results -->
+              <div v-if="surveyResults.length > 0" class="survey-results">
+                <div class="results-header">
+                  <span class="results-title">{{ $t('step5.surveyResults') }}</span>
+                  <span class="results-count">{{ $t('step5.surveyResultsCount', { count: surveyResults.length }) }}</span>
+                </div>
+                <div class="results-list">
+                  <div
+                    v-for="(result, idx) in surveyResults"
+                    :key="idx"
+                    class="result-card"
                   >
-                  <div class="checkbox-avatar">{{ (agent.username || 'A')[0] }}</div>
-                  <div class="checkbox-info">
-                    <span class="checkbox-name">{{ agent.username }}</span>
-                    <span class="checkbox-role">{{ agent.profession || $t('step2.unknownProfession') }}</span>
-                  </div>
-                  <div class="checkbox-indicator">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </div>
-                </label>
-              </div>
-              <div class="selection-actions">
-                <button class="action-link" @click="selectAllAgents">{{ $t('step5.selectAll') }}</button>
-                <span class="action-divider">|</span>
-                <button class="action-link" @click="clearAgentSelection">{{ $t('step5.clearSelection') }}</button>
-              </div>
-            </div>
-
-            <div class="setup-section">
-              <div class="section-header">
-                <span class="section-title">{{ $t('step5.surveyQuestions') }}</span>
-              </div>
-              <textarea 
-                v-model="surveyQuestion"
-                class="survey-input"
-                :placeholder="$t('step5.surveyInputPlaceholder')"
-                rows="3"
-              ></textarea>
-            </div>
-
-            <button 
-              class="survey-submit-btn"
-              :disabled="selectedAgents.size === 0 || !surveyQuestion.trim() || isSurveying"
-              @click="submitSurvey"
-            >
-              <span v-if="isSurveying" class="loading-spinner"></span>
-              <span v-else>{{ $t('step5.submitSurvey') }}</span>
-            </button>
-          </div>
-
-          <!-- Survey Results -->
-          <div v-if="surveyResults.length > 0" class="survey-results">
-            <div class="results-header">
-              <span class="results-title">{{ $t('step5.surveyResults') }}</span>
-              <span class="results-count">{{ $t('step5.surveyResultsCount', { count: surveyResults.length }) }}</span>
-            </div>
-            <div class="results-list">
-              <div 
-                v-for="(result, idx) in surveyResults" 
-                :key="idx"
-                class="result-card"
-              >
-                <div class="result-header">
-                  <div class="result-avatar">{{ (result.agent_name || 'A')[0] }}</div>
-                  <div class="result-info">
-                    <span class="result-name">{{ result.agent_name }}</span>
-                    <span class="result-role">{{ result.profession || $t('step2.unknownProfession') }}</span>
+                    <div class="result-header">
+                      <div class="result-avatar">{{ (result.agent_name || 'A')[0] }}</div>
+                      <div class="result-info">
+                        <span class="result-name">{{ result.agent_name }}</span>
+                        <span class="result-role">{{ result.profession || $t('step2.unknownProfession') }}</span>
+                      </div>
+                    </div>
+                    <div class="result-question">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                      </svg>
+                      <span>{{ result.question }}</span>
+                    </div>
+                    <div class="result-answer" v-html="renderMarkdown(result.answer)"></div>
                   </div>
                 </div>
-                <div class="result-question">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                  </svg>
-                  <span>{{ result.question }}</span>
-                </div>
-                <div class="result-answer" v-html="renderMarkdown(result.answer)"></div>
               </div>
             </div>
           </div>
@@ -411,7 +433,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { chatWithReport, getReport, getAgentLog } from '../api/report'
 import { interviewAgents, getSimulationProfilesRealtime } from '../api/simulation'
@@ -428,11 +450,10 @@ const emit = defineEmits(['add-log', 'update-status'])
 // State
 const activeTab = ref('chat')
 const chatTarget = ref('report_agent')
-const showAgentDropdown = ref(false)
 const selectedAgent = ref(null)
 const selectedAgentIndex = ref(null)
-const showFullProfile = ref(true)
-const showToolsDetail = ref(true)
+const showInfoPanel = ref(false)
+const sidebarSearch = ref('')
 
 // Chat State
 const chatInput = ref('')
@@ -441,6 +462,36 @@ const chatHistoryCache = ref({}) // 缓存所有对话记录: { 'report_agent': 
 const isSending = ref(false)
 const chatMessages = ref(null)
 const chatInputRef = ref(null)
+
+// WhatsApp-style sidebar helpers
+const avatarPalette = ['#F97316', '#8B5CF6', '#3B82F6', '#10B981', '#EC4899', '#F59E0B', '#06B6D4', '#EF4444']
+const avatarColor = (idx) => avatarPalette[(idx ?? 0) % avatarPalette.length]
+
+const filteredProfiles = computed(() => {
+  const q = sidebarSearch.value.trim().toLowerCase()
+  return profiles.value
+    .map((agent, idx) => ({ agent, idx }))
+    .filter(({ agent }) => !q || (agent.username || '').toLowerCase().includes(q) || (agent.profession || '').toLowerCase().includes(q))
+})
+
+const historyFor = (key) => {
+  if (key === 'report_agent' && chatTarget.value === 'report_agent') return chatHistory.value
+  if (chatTarget.value === 'agent' && key === `agent_${selectedAgentIndex.value}`) return chatHistory.value
+  return chatHistoryCache.value[key] || []
+}
+
+const lastMessageFor = (key) => {
+  const hist = historyFor(key)
+  if (!hist.length) return ''
+  const content = hist[hist.length - 1].content || ''
+  return content.length > 40 ? content.slice(0, 40) + '…' : content
+}
+
+const lastTimeFor = (key) => {
+  const hist = historyFor(key)
+  if (!hist.length) return ''
+  return formatTime(hist[hist.length - 1].timestamp)
+}
 
 // Survey State
 const selectedAgents = ref(new Set())
@@ -480,13 +531,6 @@ const toggleSectionCollapse = (idx) => {
   collapsedSections.value = newSet
 }
 
-const selectChatTarget = (target) => {
-  chatTarget.value = target
-  if (target === 'report_agent') {
-    showAgentDropdown.value = false
-  }
-}
-
 // 保存当前对话记录到缓存
 const saveChatHistory = () => {
   if (chatHistory.value.length === 0) return
@@ -506,8 +550,8 @@ const selectReportAgentChat = () => {
   chatTarget.value = 'report_agent'
   selectedAgent.value = null
   selectedAgentIndex.value = null
-  showAgentDropdown.value = false
-  
+  showInfoPanel.value = false
+
   // 恢复 Report Agent 的对话记录
   chatHistory.value = chatHistoryCache.value['report_agent'] || []
 }
@@ -516,26 +560,18 @@ const selectSurveyTab = () => {
   activeTab.value = 'survey'
   selectedAgent.value = null
   selectedAgentIndex.value = null
-  showAgentDropdown.value = false
-}
-
-const toggleAgentDropdown = () => {
-  showAgentDropdown.value = !showAgentDropdown.value
-  if (showAgentDropdown.value) {
-    activeTab.value = 'chat'
-    chatTarget.value = 'agent'
-  }
 }
 
 const selectAgent = (agent, idx) => {
   // 保存当前对话记录
   saveChatHistory()
-  
+
   selectedAgent.value = agent
   selectedAgentIndex.value = idx
   chatTarget.value = 'agent'
-  showAgentDropdown.value = false
-  
+  activeTab.value = 'chat'
+  showInfoPanel.value = false
+
   // 恢复该 Agent 的对话记录
   chatHistory.value = chatHistoryCache.value[`agent_${idx}`] || []
   addLog(t('log.selectChatTarget', { name: agent.username }))
@@ -928,24 +964,11 @@ const loadProfiles = async () => {
   }
 }
 
-// Click outside to close dropdown
-const handleClickOutside = (e) => {
-  const dropdown = document.querySelector('.agent-dropdown')
-  if (dropdown && !dropdown.contains(e.target)) {
-    showAgentDropdown.value = false
-  }
-}
-
 // Lifecycle
 onMounted(() => {
   addLog(t('log.step5Init'))
   loadReportData()
   loadProfiles()
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 
 watch(() => props.reportId, (newId) => {
@@ -1311,258 +1334,289 @@ watch(() => props.simulationId, (newId) => {
   overflow: hidden;
 }
 
-/* Action Bar - Professional Design */
-.action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid #E5E7EB;
-  background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFC 100%);
-  gap: 16px;
+/* WhatsApp-style shell: sidebar + main area */
+.wa-shell {
+  flex-direction: row;
+  background: #FFFFFF;
 }
 
-.action-bar-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 160px;
-}
-
-.action-bar-icon {
-  color: #1F2937;
-  flex-shrink: 0;
-}
-
-.action-bar-text {
+/* Sidebar */
+.wa-sidebar {
+  width: 320px;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  background: #FFFFFF;
+  border-right: 1px solid #E9EDEF;
 }
 
-.action-bar-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1F2937;
-  letter-spacing: -0.01em;
-}
-
-.action-bar-subtitle {
-  font-size: 11px;
-  color: #9CA3AF;
-}
-
-.action-bar-subtitle.mono {
-  font-family: 'JetBrains Mono', 'SF Mono', monospace;
-}
-
-.action-bar-tabs {
+.wa-sidebar-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
-  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #F0F2F5;
+  border-bottom: 1px solid #E9EDEF;
 }
 
-.tab-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #6B7280;
-  background: #F3F4F6;
-  border: 1px solid transparent;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.tab-pill:hover {
-  background: #E5E7EB;
-  color: #374151;
-}
-
-.tab-pill.active {
-  background: #1F2937;
-  color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.15);
-}
-
-.tab-pill svg {
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.tab-pill.active svg {
-  opacity: 1;
-}
-
-.tab-divider {
-  width: 1px;
-  height: 24px;
-  background: #E5E7EB;
-  margin: 0 6px;
-}
-
-.agent-pill {
-  width: 200px;
-  justify-content: space-between;
-}
-
-.agent-pill span {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
-}
-
-.survey-pill {
-  background: #ECFDF5;
-  color: #047857;
-}
-
-.survey-pill:hover {
-  background: #D1FAE5;
-  color: #065F46;
-}
-
-.survey-pill.active {
-  background: #047857;
-  color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(4, 120, 87, 0.2);
-}
-
-/* Interaction Header */
-.interaction-header {
-  padding: 16px 24px;
-  border-bottom: 1px solid #E5E7EB;
-  background: #FAFAFA;
-}
-
-.tab-switcher {
-  display: flex;
-  gap: 8px;
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #6B7280;
-  background: transparent;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tab-btn:hover {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-}
-
-.tab-btn.active {
-  background: #1F2937;
-  color: #FFFFFF;
-  border-color: #1F2937;
-}
-
-.tab-btn svg {
-  flex-shrink: 0;
-}
-
-/* Chat Container */
-.chat-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Report Agent Tools Card */
-.report-agent-tools-card {
-  border-bottom: 1px solid #E5E7EB;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
-}
-
-.tools-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-}
-
-.tools-card-avatar {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
-  color: #FFFFFF;
+.wa-brand-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #00A884 0%, #008069 100%);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.2);
 }
 
-.tools-card-info {
+.wa-sidebar-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111B21;
+}
+
+.wa-sidebar-count {
+  font-size: 11px;
+  color: #667781;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+
+.wa-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 12px;
+  padding: 8px 12px;
+  background: #F0F2F5;
+  border-radius: 20px;
+  color: #667781;
+}
+
+.wa-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: #111B21;
+}
+
+.wa-search-input::placeholder {
+  color: #667781;
+}
+
+.wa-chat-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.wa-chat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.wa-chat-item:hover {
+  background: #F5F6F6;
+}
+
+.wa-chat-item.active {
+  background: #F0F2F5;
+  border-left-color: #00A884;
+}
+
+.wa-chat-avatar {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 50%;
+  background: #6B7280;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.wa-avatar-report {
+  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+}
+
+.wa-avatar-broadcast {
+  background: linear-gradient(135deg, #00A884 0%, #008069 100%);
+}
+
+.wa-chat-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.tools-card-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 2px;
-}
-
-.tools-card-subtitle {
-  font-size: 12px;
-  color: #6B7280;
-}
-
-.tools-card-toggle {
-  width: 28px;
-  height: 28px;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  cursor: pointer;
+.wa-chat-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #6B7280;
-  transition: all 0.2s ease;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wa-chat-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111B21;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-chat-time {
+  font-size: 11px;
+  color: #667781;
   flex-shrink: 0;
 }
 
-.tools-card-toggle:hover {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
+.wa-chat-preview {
+  font-size: 12.5px;
+  color: #667781;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.tools-card-toggle svg {
-  transition: transform 0.3s ease;
+.wa-list-divider {
+  height: 8px;
+  background: #F7F8F8;
+  border-top: 1px solid #E9EDEF;
+  border-bottom: 1px solid #E9EDEF;
 }
 
-.tools-card-toggle svg.is-expanded {
-  transform: rotate(180deg);
+.wa-empty-list {
+  padding: 24px 20px;
+  font-size: 12.5px;
+  color: #9CA3AF;
+  text-align: center;
+  line-height: 1.6;
 }
 
-.tools-card-body {
-  padding: 0 20px 16px 20px;
+/* Main area */
+.wa-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #EFEAE2;
+}
+
+.wa-chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wa-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #F0F2F5;
+  border-bottom: 1px solid #E9EDEF;
+}
+
+.wa-header-avatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  background: #6B7280;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.wa-header-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-header-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111B21;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-header-status {
+  font-size: 12px;
+  color: #667781;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-typing {
+  color: #00A884;
+}
+
+.wa-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: #54656F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.wa-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.wa-icon-btn svg.is-expanded {
+  color: #00A884;
+}
+
+/* Info panel (report tools / agent bio), toggled from the header */
+.wa-info-panel {
+  padding: 14px 20px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E9EDEF;
+}
+
+.wa-profile-bio {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4B5563;
 }
 
 .tools-grid {
@@ -1638,103 +1692,6 @@ watch(() => props.simulationId, (newId) => {
   overflow: hidden;
 }
 
-/* Agent Profile Card */
-.agent-profile-card {
-  border-bottom: 1px solid #E5E7EB;
-  background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
-}
-
-.profile-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-}
-
-.profile-card-avatar {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
-  color: #FFFFFF;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.2);
-}
-
-.profile-card-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.profile-card-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 2px;
-}
-
-.profile-card-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #6B7280;
-}
-
-.profile-card-handle {
-  color: #9CA3AF;
-}
-
-.profile-card-profession {
-  padding: 2px 8px;
-  background: #E5E7EB;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.profile-card-toggle {
-  width: 28px;
-  height: 28px;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6B7280;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.profile-card-toggle:hover {
-  background: #F9FAFB;
-  border-color: #D1D5DB;
-}
-
-.profile-card-toggle svg {
-  transition: transform 0.3s ease;
-}
-
-.profile-card-toggle svg.is-expanded {
-  transform: rotate(180deg);
-}
-
-.profile-card-body {
-  padding: 0 20px 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .profile-card-label {
   font-size: 11px;
   font-weight: 600;
@@ -1744,181 +1701,21 @@ watch(() => props.simulationId, (newId) => {
   margin-bottom: 6px;
 }
 
-.profile-card-bio {
-  background: #FFFFFF;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid #E5E7EB;
-}
-
-.profile-card-bio p {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #4B5563;
-}
-
-/* Target Selector */
-.target-selector {
-  padding: 16px 24px;
-  border-bottom: 1px solid #E5E7EB;
-}
-
-.selector-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #9CA3AF;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 10px;
-}
-
-.selector-options {
-  display: flex;
-  gap: 12px;
-}
-
-.target-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #374151;
-  background: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.target-option:hover {
-  border-color: #D1D5DB;
-}
-
-.target-option.active {
-  background: #1F2937;
-  color: #FFFFFF;
-  border-color: #1F2937;
-}
-
-/* Agent Dropdown */
-.agent-dropdown {
-  position: relative;
-}
-
-.dropdown-arrow {
-  margin-left: 4px;
-  transition: transform 0.2s ease;
-  opacity: 0.6;
-}
-
-.dropdown-arrow.open {
-  transform: rotate(180deg);
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  min-width: 240px;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
-  max-height: 320px;
+/* WhatsApp-style Messages */
+.wa-messages {
+  flex: 1;
   overflow-y: auto;
-  z-index: 100;
-}
-
-.dropdown-header {
-  padding: 12px 16px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #9CA3AF;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid #F3F4F6;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border-left: 3px solid transparent;
-}
-
-.dropdown-item:hover {
-  background: #F9FAFB;
-  border-left-color: #1F2937;
-}
-
-.dropdown-item:first-of-type {
-  margin-top: 4px;
-}
-
-.dropdown-item:last-child {
-  margin-bottom: 4px;
-}
-
-.agent-avatar {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
-  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
-  color: #FFFFFF;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(31, 41, 55, 0.1);
-}
-
-.agent-info {
+  padding: 20px 8% 20px 8%;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
-  min-width: 0;
+  background-color: #EFEAE2;
+  background-image:
+    radial-gradient(circle at 8px 8px, rgba(0, 0, 0, 0.035) 1.4px, transparent 0);
+  background-size: 28px 28px;
 }
 
-.agent-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1F2937;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.agent-role {
-  font-size: 11px;
-  color: #9CA3AF;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Chat Messages */
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.chat-empty {
+.wa-empty-chat {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1928,7 +1725,7 @@ watch(() => props.simulationId, (newId) => {
   color: #9CA3AF;
 }
 
-.empty-icon {
+.wa-empty-chat-icon {
   opacity: 0.3;
 }
 
@@ -1939,117 +1736,87 @@ watch(() => props.simulationId, (newId) => {
   line-height: 1.6;
 }
 
-.chat-message {
+.wa-date-divider {
   display: flex;
-  gap: 12px;
-}
-
-.chat-message.user {
-  flex-direction: row-reverse;
-}
-
-.message-avatar {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 14px;
+  margin: 8px 0 14px 0;
+}
+
+.wa-date-divider span {
+  background: #E9F0EE;
+  color: #54656F;
+  font-size: 11.5px;
   font-weight: 600;
-  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 }
 
-.chat-message.user .message-avatar {
-  background: #1F2937;
-  color: #FFFFFF;
-}
-
-.chat-message.assistant .message-avatar {
-  background: #F3F4F6;
-  color: #374151;
-}
-
-.message-content {
-  max-width: 70%;
+.wa-bubble-row {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  margin: 3px 0;
 }
 
-.chat-message.user .message-content {
-  align-items: flex-end;
+.wa-bubble-row.sent {
+  justify-content: flex-end;
 }
 
-.message-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.wa-bubble-row.received {
+  justify-content: flex-start;
 }
 
-.chat-message.user .message-header {
-  flex-direction: row-reverse;
+.wa-bubble {
+  max-width: 65%;
+  padding: 7px 9px 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
+  position: relative;
 }
 
-.sender-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
+.wa-bubble-row.sent .wa-bubble {
+  background: #D9FDD3;
+  border-top-right-radius: 0;
 }
 
-.message-time {
-  font-size: 11px;
-  color: #9CA3AF;
+.wa-bubble-row.received .wa-bubble {
+  background: #FFFFFF;
+  border-top-left-radius: 0;
 }
 
-.message-text {
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.5;
+.wa-bubble-text {
+  font-size: 14.2px;
+  line-height: 1.4;
+  color: #111B21;
+  word-break: break-word;
 }
 
-.chat-message.user .message-text {
-  background: #1F2937;
-  color: #FFFFFF;
-  border-bottom-right-radius: 4px;
-}
-
-.chat-message.assistant .message-text {
-  background: #F3F4F6;
-  color: #374151;
-  border-bottom-left-radius: 4px;
-}
-
-.message-text :deep(.md-p) {
+.wa-bubble-text :deep(.md-p) {
   margin: 0;
 }
 
-.message-text :deep(.md-p:last-child) {
+.wa-bubble-text :deep(.md-p:last-child) {
   margin-bottom: 0;
 }
 
 /* 修复有序列表编号 - 使用 CSS 计数器让多个 ol 连续编号 */
-.message-text {
+.wa-bubble-text {
   counter-reset: list-counter;
 }
 
-.message-text :deep(.md-ol) {
+.wa-bubble-text :deep(.md-ol) {
   list-style: none;
   padding-left: 0;
   margin: 8px 0;
 }
 
-.message-text :deep(.md-oli) {
+.wa-bubble-text :deep(.md-oli) {
   counter-increment: list-counter;
   display: flex;
   gap: 8px;
   margin: 4px 0;
 }
 
-.message-text :deep(.md-oli)::before {
+.wa-bubble-text :deep(.md-oli)::before {
   content: counter(list-counter) ".";
   font-weight: 600;
   color: #374151;
@@ -2058,28 +1825,47 @@ watch(() => props.simulationId, (newId) => {
 }
 
 /* 无序列表样式 */
-.message-text :deep(.md-ul) {
+.wa-bubble-text :deep(.md-ul) {
   padding-left: 20px;
   margin: 8px 0;
 }
 
-.message-text :deep(.md-li) {
+.wa-bubble-text :deep(.md-li) {
   margin: 4px 0;
 }
 
+.wa-bubble-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  margin-top: 2px;
+  float: right;
+  margin-left: 8px;
+}
+
+.wa-bubble-time {
+  font-size: 10.5px;
+  color: #667781;
+}
+
+.wa-check {
+  flex-shrink: 0;
+}
+
 /* Typing Indicator */
+.wa-typing-bubble {
+  padding: 12px 16px;
+}
+
 .typing-indicator {
   display: flex;
   gap: 4px;
-  padding: 10px 14px;
-  background: #F3F4F6;
-  border-radius: 12px;
-  border-bottom-left-radius: 4px;
 }
 
 .typing-indicator span {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   background: #9CA3AF;
   border-radius: 50%;
   animation: typing 1.4s infinite ease-in-out;
@@ -2094,44 +1880,41 @@ watch(() => props.simulationId, (newId) => {
   30% { transform: translateY(-8px); }
 }
 
-/* Chat Input */
-.chat-input-area {
-  padding: 16px 24px;
-  border-top: 1px solid #E5E7EB;
+/* WhatsApp-style Input Bar */
+.wa-input-bar {
+  padding: 12px 16px;
+  background: #F0F2F5;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-end;
 }
 
-.chat-input {
+.wa-input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 10px 16px;
   font-size: 14px;
-  border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border: none;
+  border-radius: 20px;
   resize: none;
   font-family: inherit;
   line-height: 1.5;
-  transition: border-color 0.2s ease;
-}
-
-.chat-input:focus {
+  background: #FFFFFF;
   outline: none;
-  border-color: #1F2937;
 }
 
-.chat-input:disabled {
+.wa-input:disabled {
   background: #F9FAFB;
   cursor: not-allowed;
 }
 
-.send-btn {
-  width: 44px;
-  height: 44px;
-  background: #1F2937;
+.wa-send-btn {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  background: #00A884;
   color: #FFFFFF;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2139,12 +1922,12 @@ watch(() => props.simulationId, (newId) => {
   transition: background 0.2s ease;
 }
 
-.send-btn:hover:not(:disabled) {
-  background: #374151;
+.wa-send-btn:hover:not(:disabled) {
+  background: #008069;
 }
 
-.send-btn:disabled {
-  background: #E5E7EB;
+.wa-send-btn:disabled {
+  background: #D1D5DB;
   color: #9CA3AF;
   cursor: not-allowed;
 }
@@ -2537,7 +2320,7 @@ watch(() => props.simulationId, (newId) => {
 }
 
 /* 聊天/问卷区域的引用样式 */
-.chat-messages :deep(.md-quote),
+.wa-messages :deep(.md-quote),
 .result-answer :deep(.md-quote) {
   margin: 12px 0;
   padding: 12px 16px;
